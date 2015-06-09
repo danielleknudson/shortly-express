@@ -8,26 +8,30 @@ var User = db.Model.extend({
   initialize: function(model) {
 
     var user = this;
-    console.log('MODEL:', model);
     this.on('creating', function(model, attrs, options){
-
       bcrypt.genSalt(5, function(err, result) {
       if (err) {
         throw err;
       }
-        bcrypt.hash(model.password, result, null, function(err, hash) {
+      bcrypt.hash(model.attributes.password_hash, result, null, function(err, hash) {
             if(err) {
               throw err;
             }
             user.set('password_hash', hash);
             user.set('salt', result);
-            console.log('salt:', user.get('salt'));
-            console.log('hash:', hash);
-            console.log('attribute hash:', user.get('password_hash'));
         });
-
       });
     });
+  },
+  checkPassword: function(password) {
+    var user = this;
+    bcrypt.compare(password, this.get('password_hash'), function(err, res) {
+      if (res) {
+        console.log(user.get('username'), "valid password");
+      } else {
+        console.log(user.get('username'), "invalid password");
+      }
+      });
   }
 });
 

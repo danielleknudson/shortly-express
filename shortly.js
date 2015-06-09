@@ -56,18 +56,11 @@ function(req, res){
     username: req.body.username,
     password_hash: req.body.password
   });
-  // save user to users collection
   user.save().then(function(newUser) {
-    // update user so only hashed password/salt are in collection
-    // overwrites plain text password
     newUser.save();
   });
-  var query = Users.fetch().then(function(collection) {
-      collection.forEach(function(item) {
-        console.log(item);
-      });
-    });
-    res.send(200);
+
+  res.send(200);
 });
 
 app.post('/login',
@@ -75,7 +68,7 @@ function(req, res){
   new User({username: req.body.username})
     .fetch()
     .then(function(model) {
-      console.log('model:', model);
+      model.checkPassword(req.body.password);
     });
 });
 
