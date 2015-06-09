@@ -52,22 +52,31 @@ function(req, res) {
 
 app.post('/signup',
 function(req, res){
-  // user.increments('id').primary();
-  // user.string('username', 100);
-  // user.string('password_hash', 100);
-  // user.string('salt', 10);
-  // user.timestamps();
   var user = new User({
     username: req.body.username,
     password_hash: req.body.password
   });
+  // save user to users collection
   user.save().then(function(newUser) {
-    Users.add(newUser);
-    res.send(200,newUser);
+    // update user so only hashed password/salt are in collection
+    // overwrites plain text password
+    newUser.save();
   });
+  var query = Users.fetch().then(function(collection) {
+      collection.forEach(function(item) {
+        console.log(item);
+      });
+    });
+    res.send(200);
+});
 
-  // save()
-
+app.post('/login',
+function(req, res){
+  new User({username: req.body.username})
+    .fetch()
+    .then(function(model) {
+      console.log('model:', model);
+    });
 });
 
 app.post('/links',
