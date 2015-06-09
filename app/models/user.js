@@ -23,11 +23,12 @@ var User = db.Model.extend({
       });
     });
   },
-  checkPassword: function(password) {
+  checkPassword: function(password, callback, response, request) {
     var user = this;
     bcrypt.compare(password, this.get('password_hash'), function(err, res) {
       if (res) {
         console.log(user.get('username'), "valid password");
+        callback(user.get('username'), response, request);
       } else {
         console.log(user.get('username'), "invalid password");
       }

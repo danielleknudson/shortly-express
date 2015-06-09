@@ -2,7 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-
+var session = require('express-session');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -15,6 +15,7 @@ var app = express();
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
+app.use(session({secret:'quiet'}));
 app.use(partials());
 // Parse JSON (uniform resource locators)
 app.use(bodyParser.json());
@@ -22,10 +23,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
-
 app.get('/',
 function(req, res) {
-  res.render('index');
+  if (!req.session.username) {
+    console.log('NO USERNAME');
+    res.redirect('/login');
+  } else {
+    console.log("SESSION:", req.session);
+    res.render('index');
+
+  }
 });
 
 app.get('/signup',
@@ -68,9 +75,16 @@ function(req, res){
   new User({username: req.body.username})
     .fetch()
     .then(function(model) {
-      model.checkPassword(req.body.password);
+      model.checkPassword(req.body.password, setSession, res, req);
     });
 });
+
+
+var setSession = function(name, res, req) {
+  req.session.username = name;
+  res.redirect('/');
+  console.log('SUCCESSFUL');
+};
 
 app.post('/links',
 function(req, res) {
